@@ -1,0 +1,10 @@
+```
+# Editor and IDE files
+.editorconfig
+
+# Documentation
+docs/architecture/PROJECT_STRUCTURE.md
+
+# Readme
+README.md
+```
