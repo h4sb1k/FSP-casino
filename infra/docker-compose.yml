@@ -1,0 +1,173 @@
+# Stoloto VIP Rooms - Docker Compose for Local Development
+# Version: 1.0
+# Description: Full stack with backend, frontend, Redis, PostgreSQL
+
+version: '3.8'
+
+services:
+  # ==================== DATABASES ====================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: stoloto-postgres
+    environment:
+      POSTGRES_DB: stoloto_vip
+      POSTGRES_USER: stoloto_user
+      POSTGRES_PASSWORD: stoloto_password_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/resources/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stoloto_user -d stoloto_vip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stoloto-network
+    profiles:
+      - dev
+      - full
+
+  redis:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.redis
+    container_name: stoloto-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - stoloto-network
+    profiles:
+      - dev
+      - full
+
+  # ==================== BACKEND ====================
+  
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    container_name: stoloto-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/stoloto_vip
+      SPRING_DATASOURCE_USERNAME: stoloto_user
+      SPRING_DATASOURCE_PASSWORD: stoloto_password_dev
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: your-secret-key-change-in-production-min-32-chars
+      JWT_EXPIRATION_MS: 86400000
+      SERVER_PORT: 8080
+      LOG_LEVEL: INFO
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/resources:/app/resources
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
+    networks:
+      - stoloto-network
+    profiles:
+      - dev
+      - full
+      - backend-only
+
+  # ==================== FRONTEND ====================
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.frontend
+    container_name: stoloto-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api
+      VITE_WS_URL: ws://localhost:8080/ws
+      NODE_ENV: development
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    networks:
+      - stoloto-network
+    profiles:
+      - dev
+      - full
+      - frontend-only
+
+  # ==================== MONITORING (Optional) ====================
+  
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: stoloto-redisinsight
+    environment:
+      REDISINSIGHT_KV_REDIS_HOST: redis
+      REDISINSIGHT_KV_REDIS_PORT: 6379
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+    volumes:
+      - redisinsight_data:/db
+    networks:
+      - stoloto-network
+    profiles:
+      - monitoring
+
+  # ==================== ADMINER (DB GUI - Optional) ====================
+  
+  adminer:
+    image: adminer:latest
+    container_name: stoloto-adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    networks:
+      - stoloto-network
+    profiles:
+      - monitoring
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  redisinsight_data:
+    driver: local
+
+# ==================== NETWORKS ====================
+networks:
+  stoloto-network:
+    driver: bridge
+    name: stoloto-network
