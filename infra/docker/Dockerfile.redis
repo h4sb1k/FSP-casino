@@ -1,0 +1,17 @@
+# Stoloto VIP Rooms - Redis Dockerfile (with modules)
+FROM redis:7-alpine
+
+# Install redisinsight for monitoring (optional)
+# For production with RedisJSON, RedisTimeSeries, etc.
+
+WORKDIR /data
+
+# Expose Redis port
+EXPOSE 6379
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+    CMD redis-cli ping || exit 1
+
+# Start Redis with persistence
+CMD ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
