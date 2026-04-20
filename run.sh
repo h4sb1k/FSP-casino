@@ -29,6 +29,14 @@ check_docker() {
     command -v docker &> /dev/null && docker --version &> /dev/null
 }
 
+check_java() {
+    command -v java &> /dev/null
+}
+
+check_node() {
+    command -v node &> /dev/null
+}
+
 show_help() {
     cat << EOF
 ╔════════════════════════════════════════╗
@@ -40,7 +48,7 @@ show_help() {
 
 Опции:
   --docker      Принудительный запуск через Docker
-  --native      Принудительный Native режим
+  --native      Принудительный Native режим (локально)
   --stop        Остановить все сервисы
   --clean       Остановить и удалить данные
   --help        Показать эту справку
@@ -48,12 +56,19 @@ show_help() {
 Примеры:
   ./run.sh                  # Авто-выбор режима
   ./run.sh --docker         # Только Docker
+  ./run.sh --native         # Только Native (требует PostgreSQL, Redis, Java, Node)
   ./run.sh --stop           # Остановить всё
 
 После запуска:
-  Frontend:  http://localhost:3000
-  Backend:   http://localhost:8080
-  API Docs:  http://localhost:8080/swagger-ui.html
+  Docker:
+    Frontend:  http://localhost:3000
+    Backend:   http://localhost:8080
+    API Docs:  http://localhost:8080/swagger-ui.html
+  
+  Native:
+    Frontend:  http://localhost:5173
+    Backend:   http://localhost:8080
+    API Docs:  http://localhost:8080/swagger-ui.html
 
 EOF
 }
@@ -68,14 +83,15 @@ start_docker() {
 
     cd "$INFRA_DIR"
 
-    log_info "Проверка docker-compose..."
+    log_info "Проверка docker compose..."
     if ! docker compose version &> /dev/null; then
-        log_error "docker compose не найден"
+        log_error "docker compose не найден. Установите Docker Compose V2"
         exit 1
     fi
 
-    log_info "Запуск сервисов..."
-    docker compose -f docker-compose.yml up --build -d
+    log_info "Запуск сервисов через docker compose..."
+    # Явно указываем все сервисы для запуска
+    docker compose -f docker-compose.yml up --build -d postgres redis backend frontend
 
     log_info "Ожидание готовности (30 сек)..."
     sleep 30
@@ -120,9 +136,40 @@ clean_docker() {
 }
 
 start_native() {
-    log_error "Native режим требует ручной настройки PostgreSQL и Redis"
-    log_error "Используйте Docker режим: ./run.sh --docker"
-    exit 1
+    log_step "Запуск в Native режиме..."
+    
+    # Проверка зависимостей
+    if ! check_java; then
+        log_error "Java не найдена. Установите JDK 17+"
+        exit 1
+    fi
+    
+    if ! check_node; then
+        log_error "Node.js не найден. Установите Node.js 18+"
+        exit 1
+    fi
+    
+    log_success "Все зависимости найдены"
+    
+    echo ""
+    log_info "=========================================="
+    log_info "Native режим требует ручной настройки!"
+    log_info "=========================================="
+    echo ""
+    log_info "1. Убедитесь, что PostgreSQL запущен на localhost:5432"
+    log_info "   DB: stoloto_vip, User: stoloto_user, Pass: stoloto_password_dev"
+    echo ""
+    log_info "2. Убедитесь, что Redis запущен на localhost:6379"
+    echo ""
+    log_info "3. Запустите Backend:"
+    log_info "   cd /workspace/backend && ./mvnw spring-boot:run"
+    echo ""
+    log_info "4. Запустите Frontend:"
+    log_info "   cd /workspace/frontend && npm install && npm run dev"
+    echo ""
+    log_info "Или используйте скрипт run-native.sh для автоматизации:"
+    log_info "   ./run-native.sh"
+    echo ""
 }
 
 # =============================================================================

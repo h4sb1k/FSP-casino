@@ -1,5 +1,6 @@
 # Stoloto VIP Rooms - Docker Compose for Local Development
 # Description: Full stack with backend, frontend, Redis, PostgreSQL
+# Note: version attribute is obsolete in Docker Compose V2, removed
 
 services:
   # ==================== DATABASES ====================
