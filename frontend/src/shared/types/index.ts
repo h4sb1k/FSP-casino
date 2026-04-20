@@ -55,7 +55,7 @@ export interface AuthState {
 // ============================================
 
 export type RoomStatus = 'WAITING' | 'ACTIVE' | 'FINISHED';
-export type RoomType = 'STANDARD' | 'VIP' | 'PREMIUM' | 'TOURNAMENT';
+export type RoomType = 'BRONZE' | 'GOLD' | 'DIAMOND';
 
 export interface Room {
   id: string;
