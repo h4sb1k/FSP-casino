@@ -16,14 +16,12 @@ RUN mkdir -p /root/.m2 && \
 # Copy only pom.xml first to leverage Docker layer caching
 COPY backend/pom.xml .
 
-# Download dependencies with cache mount (Docker BuildKit) - parallel build
-RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn dependency:go-offline -B -T 1C || true
+# Download ALL dependencies including plugins (no mount, uses Docker layer cache)
+RUN mvn dependency:resolve-plugins dependency:go-offline -B -T 1C
 
 # Build application with parallel build
 COPY backend/src ./src
-RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn clean package -DskipTests -B -T 1C
+RUN mvn clean package -DskipTests -B -T 1C
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

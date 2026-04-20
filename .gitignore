@@ -1,28 +1,22 @@
-```yaml
-# Compiled and binary files
+```
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+target/
+.gradle/
+
+# Build artifacts
+dist/
+build/
+*.pyc
 *.class
 *.o
 *.obj
 *.out
-*.exe
-*.dll
-*.so
-*.a
-
-# Dependencies
-target/
-.m2/
-.gradle/
-node_modules/
-venv/
-.venv/
-__pycache__/
-*.egg-info/
-
-# Build artifacts
-build/
-dist/
-out/
 
 # Environment
 .env
@@ -34,17 +28,17 @@ out/
 .idea/
 *.swp
 *.swo
-
-# Logs and temp files
-*.log
 *.tmp
 
+# Logs
+*.log
+
 # Coverage
-.coverage
 coverage/
 htmlcov/
+.coverage
 
-# OS
+# System
 .DS_Store
 Thumbs.db
 ```
