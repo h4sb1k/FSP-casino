@@ -93,19 +93,18 @@ start_docker() {
     fi
 
     log_info "Запуск сервисов через docker compose..."
-    # Явно указываем все сервисы для запуска
     docker compose -f docker-compose.yml up --build -d postgres redis backend frontend
 
-    log_info "Ожидание готовности (30 сек)..."
-    sleep 30
+    log_info "Ожидание готовности (45 сек)..."
+    sleep 45
 
     local attempt=1
-    while [ $attempt -le 20 ]; do
+    while [ $attempt -le 30 ]; do
         if curl -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
             log_success "Backend готов!"
             break
         fi
-        log_info "Попытка $attempt/20..."
+        log_info "Попытка $attempt/30..."
         sleep 3
         attempt=$((attempt + 1))
     done
