@@ -1,18 +1,25 @@
 # Stoloto VIP Rooms - Backend Dockerfile
-# Java 21 + Spring Boot
+# Java 21 + Spring Boot with optimized Maven caching
 
 FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY backend/pom.xml .
+# Install Maven and create cache directory
 RUN apk add --no-cache maven && \
-    mvn dependency:go-offline -B
+    mkdir -p /root/.m2
+
+# Copy only pom.xml first to leverage Docker layer caching
+COPY backend/pom.xml .
+
+# Download dependencies with cache mount (Docker BuildKit)
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn dependency:go-offline -B || true
 
 # Build application
 COPY backend/src ./src
-RUN mvn clean package -DskipTests -B
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
