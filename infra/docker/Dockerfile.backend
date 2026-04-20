@@ -6,20 +6,24 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
 # Install Maven and create cache directory
-RUN apk add --no-cache maven && \
+RUN apk add --no-cache maven curl && \
     mkdir -p /root/.m2
+
+# Configure Maven settings for faster downloads
+RUN mkdir -p /root/.m2 && \
+    echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd"><mirrors><mirror><id>central-eu</id><name>Central EU Mirror</name><url>https://repo.maven.apache.org/maven2/</url><mirrorOf>central</mirrorOf></mirror></mirrors></settings>' > /root/.m2/settings.xml
 
 # Copy only pom.xml first to leverage Docker layer caching
 COPY backend/pom.xml .
 
-# Download dependencies with cache mount (Docker BuildKit)
+# Download dependencies with cache mount (Docker BuildKit) - parallel build
 RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn dependency:go-offline -B || true
+    mvn dependency:go-offline -B -T 1C || true
 
-# Build application
+# Build application with parallel build
 COPY backend/src ./src
 RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn clean package -DskipTests -B
+    mvn clean package -DskipTests -B -T 1C
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
