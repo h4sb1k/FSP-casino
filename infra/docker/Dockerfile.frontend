@@ -5,9 +5,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies (cached unless package*.json changes)
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci --only=production || npm install --only=production
 
 # Copy source and build
 COPY frontend/ .

@@ -1,13 +1,10 @@
 # Stoloto VIP Rooms - Backend Dockerfile
 # Java 21 + Spring Boot with optimized Maven caching
 
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# Use image with Maven pre-installed for faster builds
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
-
-# Install Maven and create cache directory
-RUN apk add --no-cache maven curl && \
-    mkdir -p /root/.m2
 
 # Configure Maven settings for faster downloads
 RUN mkdir -p /root/.m2 && \
@@ -16,8 +13,9 @@ RUN mkdir -p /root/.m2 && \
 # Copy only pom.xml first to leverage Docker layer caching
 COPY backend/pom.xml .
 
-# Download ALL dependencies including plugins (no mount, uses Docker layer cache)
-RUN mvn dependency:resolve-plugins dependency:go-offline -B -T 1C
+# Download ALL dependencies including plugins (uses Docker layer cache)
+# This layer is cached unless pom.xml changes
+RUN mvn dependency:resolve-plugins dependency:go-offline -B -T 1C || true
 
 # Build application with parallel build
 COPY backend/src ./src
