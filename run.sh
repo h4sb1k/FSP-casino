@@ -83,6 +83,9 @@ start_docker() {
 
     cd "$INFRA_DIR"
 
+    # Enable BuildKit for better caching
+    export DOCKER_BUILDKIT=1
+
     log_info "Проверка docker compose..."
     if ! docker compose version &> /dev/null; then
         log_error "docker compose не найден. Установите Docker Compose V2"
