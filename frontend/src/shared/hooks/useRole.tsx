@@ -73,8 +73,8 @@ export function useRole(options: UseRoleOptions = {}): UseRoleResult {
 export function withRole<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   options: UseRoleOptions
-) {
-  return function WithRole(props: P) {
+): React.FC<P> {
+  return function WithRole(props: P): JSX.Element | null {
     const { hasAccess } = useRole(options);
 
     if (!hasAccess) {
