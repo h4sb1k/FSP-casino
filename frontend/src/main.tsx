@@ -8,7 +8,8 @@ import { Toaster } from 'react-hot-toast';
 
 import App from './App';
 import { store } from './shared/store/store';
-import './shared/styles/index.css';
+import './styles/global.css';
+import './styles/components.css';
 
 // Создаём клиент для React Query
 const queryClient = new QueryClient({
