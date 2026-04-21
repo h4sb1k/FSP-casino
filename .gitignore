@@ -37,8 +37,11 @@ __pycache__/
 *.tar.xz
 *.tar.zst
 
-# Dependencies
+# Dependencies and caches
 node_modules/
+bower_components/
+.jspm/
+.yarn-cache/
 venv/
 .venv/
 .env
@@ -481,3 +484,4 @@ nbproject/
 .platformio.yml.lock
 .platformio.properties.lock
 .platform......
+```
