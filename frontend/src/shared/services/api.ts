@@ -1,12 +1,10 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import type { ApiResponse, ApiError } from '@shared/types';
+import type { ApiError } from '@shared/types';
 
 class ApiClient {
   private instance: AxiosInstance;
-  private baseURL: string;
 
   constructor(baseURL: string = '/api') {
-    this.baseURL = baseURL;
     this.instance = axios.create({
       baseURL,
       timeout: 30000,
@@ -48,7 +46,7 @@ class ApiClient {
 
   private handleError(error: AxiosError): ApiError {
     if (error.response?.data) {
-      const data = error.response.data as ApiResponse<unknown>;
+      const data = error.response.data as { error?: ApiError };
       return data.error || {
         code: 'UNKNOWN_ERROR',
         message: 'Произошла неизвестная ошибка',
@@ -69,6 +67,7 @@ class ApiClient {
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    type ApiResponse<T> = { success: boolean; data?: T; error?: ApiError };
     const response = await this.instance.get<ApiResponse<T>>(url, config);
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error?.message || 'Ошибка запроса');
@@ -77,6 +76,7 @@ class ApiClient {
   }
 
   async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    type ApiResponse<T> = { success: boolean; data?: T; error?: ApiError };
     const response = await this.instance.post<ApiResponse<T>>(url, data, config);
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error?.message || 'Ошибка запроса');
@@ -85,6 +85,7 @@ class ApiClient {
   }
 
   async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    type ApiResponse<T> = { success: boolean; data?: T; error?: ApiError };
     const response = await this.instance.put<ApiResponse<T>>(url, data, config);
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error?.message || 'Ошибка запроса');
@@ -93,6 +94,7 @@ class ApiClient {
   }
 
   async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    type ApiResponse<T> = { success: boolean; data?: T; error?: ApiError };
     const response = await this.instance.patch<ApiResponse<T>>(url, data, config);
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.error?.message || 'Ошибка запроса');
@@ -101,6 +103,7 @@ class ApiClient {
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    type ApiResponse<T> = { success: boolean; data?: T; error?: ApiError };
     const response = await this.instance.delete<ApiResponse<T>>(url, config);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Ошибка запроса');
@@ -108,15 +111,4 @@ class ApiClient {
     return response.data.data as T;
   }
 
-  setAuthToken(token: string): void {
-    localStorage.setItem('accessToken', token);
-  }
-
-  removeAuthToken(): void {
-    localStorage.removeItem('accessToken');
-  }
-}
-
-// Экспортируем singleton instance
-export const apiClient = new ApiClient();
-export default apiClient;
+  setAuthToken(token: st

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { wsService } from '@shared/services';
+import type { WsMessageType } from '@shared/types';
 
 interface UseWebSocketOptions {
   autoConnect?: boolean;
@@ -39,12 +40,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     };
   }, [autoConnect, isConnected, onConnect, onDisconnect]);
 
-  const send = useCallback(<T>(message: { type: string; payload: T }) => {
+  const send = useCallback(<T>(message: { type: WsMessageType; payload: T }) => {
     wsService.send(message);
   }, []);
 
   const subscribe = useCallback(<T>(
-    type: string,
+    type: WsMessageType | '*',
     handler: (payload: T) => void
   ) => {
     return wsService.subscribe(type, handler);
