@@ -1,7 +1,7 @@
 package com.stoloto.vip.api.dto;
 
-import com.stoloto.vip.domain.enums.RoomType;
-import com.stoloto.vip.domain.enums.RoomStatus;
+import com.stoloto.vip.core.enums.RoomType;
+import com.stoloto.vip.core.enums.RoomStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

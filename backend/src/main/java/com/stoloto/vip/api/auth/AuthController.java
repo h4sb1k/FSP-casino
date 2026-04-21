@@ -3,13 +3,15 @@ package com.stoloto.vip.api.auth;
 import com.stoloto.vip.api.dto.LoginRequest;
 import com.stoloto.vip.api.dto.RegisterRequest;
 import com.stoloto.vip.api.dto.AuthResponse;
-import com.stoloto.vip.service.UserService;
-import com.stoloto.vip.service.security.JwtService;
+import com.stoloto.vip.core.entity.User;
+import com.stoloto.vip.core.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 
 /**
  * Контроллер для аутентификации и регистрации пользователей.
@@ -20,20 +22,26 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*") // Настроить для prod
 public class AuthController {
     
-    private final UserService userService;
-    private final JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
     /**
      * Регистрация нового пользователя.
      */
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        var user = userService.register(request.getUsername(), request.getEmail(), request.getPassword());
-        var tokens = jwtService.generateTokens(user);
+        var user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setBalance(BigDecimal.valueOf(1000));
+        user.setBonusBalance(BigDecimal.ZERO);
+        user.setReservedBalance(BigDecimal.ZERO);
+        userRepository.save(user);
         
         return ResponseEntity.ok(AuthResponse.builder()
-                .accessToken(tokens.getAccessToken())
-                .refreshToken(tokens.getRefreshToken())
+                .accessToken("mock-access-token")
+                .refreshToken("mock-refresh-token")
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -47,13 +55,22 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        var user = userService.authenticate(request.getEmail(), request.getPassword());
-        var tokens = jwtService.generateTokens(user);
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseGet(() -> {
+                    var newUser = new User();
+                    newUser.setUsername("demo");
+                    newUser.setEmail(request.getEmail());
+                    newUser.setPassword(passwordEncoder.encode("password"));
+                    newUser.setBalance(BigDecimal.valueOf(1000));
+                    newUser.setBonusBalance(BigDecimal.ZERO);
+                    newUser.setReservedBalance(BigDecimal.ZERO);
+                    return newUser;
+                });
         
         return ResponseEntity.ok(AuthResponse.builder()
-                .accessToken(tokens.getAccessToken())
-                .refreshToken(tokens.getRefreshToken())
-                .userId(user.getId())
+                .accessToken("mock-access-token")
+                .refreshToken("mock-refresh-token")
+                .userId(user.getId() != null ? user.getId() : 1L)
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .balance(user.getBalance())
@@ -66,12 +83,16 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestParam String refreshToken) {
-        var user = jwtService.refreshAccessToken(refreshToken);
-        var tokens = jwtService.generateTokens(user);
+        var user = new User();
+        user.setId(1L);
+        user.setUsername("demo");
+        user.setEmail("demo@example.com");
+        user.setBalance(BigDecimal.valueOf(1000));
+        user.setBonusBalance(BigDecimal.ZERO);
         
         return ResponseEntity.ok(AuthResponse.builder()
-                .accessToken(tokens.getAccessToken())
-                .refreshToken(tokens.getRefreshToken())
+                .accessToken("mock-access-token")
+                .refreshToken("mock-refresh-token")
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
