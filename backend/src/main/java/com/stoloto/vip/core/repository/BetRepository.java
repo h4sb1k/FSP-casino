@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface BetRepository extends JpaRepository<Bet, Long> {
     List<Bet> findByRoundId(Long roundId);
-    List<Bet> ByUserId(Long userId);
+    List<Bet> findByUserId(Long userId);
     List<Bet> findByRoundIdAndUserId(Long roundId, Long userId);
 }
