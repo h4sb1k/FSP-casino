@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * DTO для отображения баланса пользователя.
  */
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BalanceResponse {
     private Long userId;
-    private Long balance; // Основные монеты
-    private Long bonusBalance; // Бонусные баллы (для бустов)
-    private Long reservedBalance; // Зарезервировано на текущие игры
+    private BigDecimal balance; // Основные монеты
+    private BigDecimal bonusBalance; // Бонусные баллы (для бустов)
+    private BigDecimal reservedBalance; // Зарезервировано на текущие игры
 }

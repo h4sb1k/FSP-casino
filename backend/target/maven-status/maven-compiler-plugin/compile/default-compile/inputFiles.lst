@@ -11,6 +11,7 @@
 /workspace/backend/src/main/java/com/stoloto/vip/api/dto/JoinRoomRequest.java
 /workspace/backend/src/main/java/com/stoloto/vip/config/SecurityConfig.java
 /workspace/backend/src/main/java/com/stoloto/vip/core/entity/Transaction.java
+/workspace/backend/src/main/java/com/stoloto/vip/VipApplication.java
 /workspace/backend/src/main/java/com/stoloto/vip/scheduler/GameScheduler.java
 /workspace/backend/src/main/java/com/stoloto/vip/api/dto/LoginRequest.java
 /workspace/backend/src/main/java/com/stoloto/vip/core/service/BalanceService.java

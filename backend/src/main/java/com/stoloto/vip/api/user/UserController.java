@@ -47,7 +47,7 @@ public class UserController {
                 .userId(user.getId())
                 .balance(user.getBalance())
                 .bonusBalance(user.getBonusBalance())
-                .reservedBalance(user.getReservedBalance())
+                .reservedBalance(user.getReservedBalance() != null ? user.getReservedBalance() : BigDecimal.ZERO)
                 .build();
         return ResponseEntity.ok(balance);
     }

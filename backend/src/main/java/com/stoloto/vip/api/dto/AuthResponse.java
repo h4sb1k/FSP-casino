@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * DTO ответа с JWT токеном и информацией о пользователе.
  */
@@ -18,6 +20,6 @@ public class AuthResponse {
     private Long userId;
     private String username;
     private String email;
-    private Long balance;
-    private Long bonusBalance;
+    private BigDecimal balance;
+    private BigDecimal bonusBalance;
 }

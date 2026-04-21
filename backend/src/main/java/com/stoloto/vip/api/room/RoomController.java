@@ -49,7 +49,7 @@ public class RoomController {
         // Заглушка
         var response = new RoomResponse();
         response.setId(1L);
-        response.setName(request.getName());
+        response.setName("Demo Room");
         return ResponseEntity.ok(response);
     }
     
