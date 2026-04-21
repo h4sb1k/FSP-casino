@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ENUM тип для статуса раунда -->
+    <changeSet id="003-create-round-status" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE round_status AS ENUM ('WAITING_FOR_PLAYERS', 'BETTING_OPEN', 'BETTING_CLOSED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS round_status;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- Таблица игровых раундов -->
+    <changeSet id="003-create-rounds" author="architect">
+        <createTable tableName="rounds">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_rounds_room" references="rooms(id)"/>
+            </column>
+            <column name="round_number" type="INTEGER">
+                <comments>Номер раунда в пределах комнаты</comments>
+            </column>
+            <column name="status" type="round_status" defaultValue="WAITING_FOR_PLAYERS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_seed_hash" type="VARCHAR(64)">
+                <comments>SHA256 хэш серверного seed (до начала раунда)</comments>
+            </column>
+            <column name="server_seed" type="VARCHAR(64)">
+                <comments>Раскрытый серверный seed (после завершения раунда)</comments>
+            </column>
+            <column name="client_seed" type="VARCHAR(64)">
+                <comments>Клиентский seed (опционально от игроков)</comments>
+            </column>
+            <column name="nonce" type="BIGINT" defaultValueNumeric="0">
+                <comments>Счетчик для уникальности хэша</comments>
+            </column>
+            <column name="total_bets" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_participants" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="betting_started_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="betting_ends_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="started_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="completed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="rounds" indexName="idx_rounds_room">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="rounds" indexName="idx_rounds_status">
+            <column name="status"/>
+        </createIndex>
+        <addUniqueConstraint tableName="rounds" columnNames="room_id, round_number" constraintName="uk_rounds_room_number"/>
+        
+        <addComments tableName="rounds">
+            <comments>Игровые раунды с поддержкой Provably Fair RNG</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица ставок -->
+    <changeSet id="003-create-bets" author="architect">
+        <createTable tableName="bets">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_bets_round" references="rounds(id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_bets_user" references="users(id)"/>
+            </column>
+            <column name="amount" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="has_boost" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="boost_config_id" type="BIGINT">
+                <comments>ID использованного буста</comments>
+            </column>
+            <column name="win_weight" type="DOUBLE">
+                <comments>Вес ставки для RNG (с учетом буста)</comments>
+            </column>
+            <column name="is_winner" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payout_amount" type="BIGINT" defaultValueNumeric="0">
+                <comments>Сумма выигрыша (если победил)</comments>
+            </column>
+            <column name="status" type="VARCHAR(50)" defaultValue="PENDING">
+                <comments>PENDING, CONFIRMED, SETTLED, CANCELLED</comments>
+            </column>
+            <column name="placed_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="settled_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+
+        <createIndex tableName="bets" indexName="idx_bets_round">
+            <column name="round_id"/>
+        </createIndex>
+        <createIndex tableName="bets" indexName="idx_bets_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="bets" indexName="idx_bets_winner">
+            <column name="is_winner"/>
+        </createIndex>
+        
+        <addComments tableName="bets">
+            <comments>Ставки игроков в раундах</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица финансовых транзакций (Double Entry Bookkeeping) -->
+    <changeSet id="003-create-transactions" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE transaction_type AS ENUM (
+                'DEPOSIT', 'WITHDRAWAL', 
+                'BET_PLACE', 'BET_HOLD', 'BET_RELEASE', 'BET_WIN', 
+                'BOOST_PURCHASE', 'BONUS_GRANT',
+                'BOT_WIN_CASINO_TRANSFER'
+            );
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS transaction_type;</sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="003-create-transactions-table" author="architect">
+        <createTable tableName="transactions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_transactions_user" references="users(id)"/>
+            </column>
+            <column name="type" type="transaction_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_before" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_after" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bonus_balance_before" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="bonus_balance_after" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="reference_type" type="VARCHAR(50)">
+                <comments>BET, ROUND, BOOST, etc.</comments>
+            </column>
+            <column name="reference_id" type="BIGINT">
+                <comments>ID связанной сущности (bet_id, round_id, etc.)</comments>
+            </column>
+            <column name="idempotency_key" type="VARCHAR(100)">
+                <comments>Ключ идемпотентности для защиты от дублей</comments>
+            </column>
+            <column name="status" type="VARCHAR(50)" defaultValue="COMPLETED">
+                <comments>PENDING, COMPLETED, FAILED, ROLLED_BACK</comments>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="transactions" indexName="idx_transactions_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="transactions" indexName="idx_transactions_type">
+            <column name="type"/>
+        </createIndex>
+        <createIndex tableName="transactions" indexName="idx_transactions_reference">
+            <column name="reference_type"/>
+            <column name="reference_id"/>
+        </createIndex>
+        <createIndex tableName="transactions" indexName="idx_transactions_idempotency">
+            <column name="idempotency_key"/>
+        </createIndex>
+        
+        <addComments tableName="transactions">
+            <comments>Финансовые транзакции с полной аудиторской историей</comments>
+        </addComments>
+    </changeSet>
+
+</databaseChangeLog>
