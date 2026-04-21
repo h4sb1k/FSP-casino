@@ -1,24 +1,44 @@
 ```
+# Build artifacts
+backend/target/
+frontend/dist/
+
 # Dependencies
 node_modules/
+frontend/node_modules/
 
-# Logs and temp files
+# IDE files
+.vscode/
+.idea/
+
+# Python artifacts (if any Python files exist in the project)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
 *.log
-*.tmp
 
-# Environment
+# Environment files
 .env
 .env.local
 *.env.*
 
-# Editors
-.vscode/
-.idea/
-
-# Build outputs
-dist/
-build/
+# Coverage reports
 coverage/
 htmlcov/
-.nyc_output/
+.coverage
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven (from the modified file path detected)
+backend/target/
 ```
