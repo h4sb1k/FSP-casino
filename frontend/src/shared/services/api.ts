@@ -111,4 +111,19 @@ class ApiClient {
     return response.data.data as T;
   }
 
-  setAuthToken(token: st
+  setAuthToken(token: string): void {
+    if (token) {
+      localStorage.setItem('accessToken', token);
+    } else {
+      localStorage.removeItem('accessToken');
+    }
+  }
+
+  clearAuthToken(): void {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
+}
+
+export const apiClient = new ApiClient();
+export default apiClient;

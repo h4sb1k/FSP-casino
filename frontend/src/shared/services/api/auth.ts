@@ -70,7 +70,7 @@ class AuthService {
   clearAuthTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    apiClient.removeAuthToken();
+    apiClient.clearAuthToken();
   }
 
   isAuthenticated(): boolean {
