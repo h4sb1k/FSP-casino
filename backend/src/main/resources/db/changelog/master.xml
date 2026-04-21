@@ -47,6 +47,13 @@
         <addDefaultValue tableName="users" columnName="active" defaultValueBoolean="true"/>
         <addDefaultValue tableName="users" columnName="is_bot" defaultValueBoolean="false"/>
         
+        <!-- Добавляем колонку reserved_balance с дефолтным значением -->
+        <addColumn tableName="users">
+            <column name="reserved_balance" type="DECIMAL(19,4)" defaultValueNumeric="0.00">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        
         <createIndex tableName="users" indexName="idx_users_username">
             <column name="username"/>
         </createIndex>
@@ -431,6 +438,7 @@
             <column name="role" value="SUPER_ADMIN"/>
             <column name="balance" valueNumeric="10000.00"/>
             <column name="bonus_balance" valueNumeric="5000.00"/>
+            <column name="reserved_balance" valueNumeric="0.00"/>
             <column name="active" valueBoolean="true"/>
             <column name="is_bot" valueBoolean="false"/>
             <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
@@ -446,6 +454,7 @@
             <column name="role" value="MODERATOR"/>
             <column name="balance" valueNumeric="5000.00"/>
             <column name="bonus_balance" valueNumeric="2000.00"/>
+            <column name="reserved_balance" valueNumeric="0.00"/>
             <column name="active" valueBoolean="true"/>
             <column name="is_bot" valueBoolean="false"/>
             <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
@@ -461,6 +470,7 @@
             <column name="role" value="USER"/>
             <column name="balance" valueNumeric="1000.00"/>
             <column name="bonus_balance" valueNumeric="500.00"/>
+            <column name="reserved_balance" valueNumeric="0.00"/>
             <column name="active" valueBoolean="true"/>
             <column name="is_bot" valueBoolean="false"/>
             <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
@@ -472,6 +482,7 @@
             <column name="role" value="USER"/>
             <column name="balance" valueNumeric="2500.00"/>
             <column name="bonus_balance" valueNumeric="750.00"/>
+            <column name="reserved_balance" valueNumeric="0.00"/>
             <column name="active" valueBoolean="true"/>
             <column name="is_bot" valueBoolean="false"/>
             <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
