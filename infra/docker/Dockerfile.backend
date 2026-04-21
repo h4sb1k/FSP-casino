@@ -5,13 +5,13 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (cached layer)
+# Copy pom.xml and download dependencies during build (removed go-offline to avoid timeouts)
 COPY backend/pom.xml .
-RUN mvn dependency:go-offline -B -q
 
 # Copy source and build with parallel compilation
+# Dependencies will be downloaded automatically during compilation
 COPY backend/src ./src
-RUN mvn package -DskipTests -B -q -T 1C
+RUN mvn package -DskipTests -B -T 1C
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

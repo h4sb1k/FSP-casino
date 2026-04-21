@@ -93,7 +93,12 @@ start_docker() {
     fi
 
     log_info "Запуск сервисов через docker compose..."
-    docker compose -f docker-compose.yml up --build -d postgres redis backend frontend
+    # Собираем backend без предварительной загрузки зависимостей (go-offline), 
+    # так как это вызывает таймауты при медленном соединении.
+    # Maven загрузит зависимости непосредственно во время компиляции.
+    docker compose -f docker-compose.yml up --build -d postgres redis
+    sleep 5
+    docker compose -f docker-compose.yml up --build -d backend frontend
 
     log_info "Ожидание готовности (45 сек)..."
     sleep 45
