@@ -1,5 +1,7 @@
 package com.stoloto.vip.api.dto;
 
+import com.stoloto.vip.domain.enums.RoomStatus;
+import com.stoloto.vip.domain.enums.RoomType;
 import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;

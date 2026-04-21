@@ -1,8 +1,34 @@
 ```
-# Build artifacts
+# Compiled Java files
+*.class
+
+# Maven build artifacts
 target/
+
+# Gradle build artifacts
+.gradle/
+
+# IDE files
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Temporary files
+*.tmp
+*.swp
+
 # Dependencies
-.m2/
-# Maven specific
-**/maven-status/
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
 ```
