@@ -26,7 +26,9 @@ services:
       - stoloto-network
 
   redis:
-    image: redis:7-alpine
+    build:
+      context: ..
+      dockerfile: infra/docker/Dockerfile.redis
     container_name: stoloto-redis
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
@@ -47,6 +49,10 @@ services:
     build:
       context: ..
       dockerfile: infra/docker/Dockerfile.backend
+      cache_from:
+        - type=local,src=/tmp/.build-cache-backend
+      args:
+        MAVEN_MIRROR_URL: http://10.31.11.235:8081/repository/maven-public/
     container_name: stoloto-backend
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -75,6 +81,8 @@ services:
     build:
       context: ..
       dockerfile: infra/docker/Dockerfile.frontend
+      cache_from:
+        - type=local,src=/tmp/.build-cache-frontend
     container_name: stoloto-frontend
     environment:
       VITE_API_BASE_URL: http://backend:8080/api
