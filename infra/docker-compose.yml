@@ -51,8 +51,6 @@ services:
       dockerfile: infra/docker/Dockerfile.backend
       cache_from:
         - type=local,src=/tmp/.build-cache-backend
-      args:
-        MAVEN_MIRROR_URL: http://10.31.11.235:8081/repository/maven-public/
     container_name: stoloto-backend
     environment:
       SPRING_PROFILES_ACTIVE: docker

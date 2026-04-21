@@ -1,23 +1,50 @@
 ```
 # Dependencies
 node_modules/
+target/
+.gradle/
 
 # Environment
 .env
 .env.local
 .env.*
 
-# Editors
-.vscode/
-
 # Logs and temp files
 *.log
 *.tmp
-*.swp
 
-# Build artifacts
-dist/
-build/
-*.o
-*.obj
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+venv/
+.venv/
+
+# Java/Maven
+*.class
+*.jar
+*.war
+*.ear
+META-INF/
+!mvn-settings.xml
+
+# Docker
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Build artifacts from docker/compose
+**/Dockerfile*
+docker-compose*.yml
+!docker-compose.yml
+!infra/docker-compose.yml
+!infra/docker/Dockerfile.backend
 ```
