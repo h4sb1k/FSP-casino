@@ -24,6 +24,7 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_step() { echo -e "${CYAN}[STEP]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 check_docker() {
     command -v docker &> /dev/null && docker --version &> /dev/null
@@ -87,18 +88,22 @@ start_docker() {
     export DOCKER_BUILDKIT=1
 
     log_info "Проверка docker compose..."
-    if ! docker compose version &> /dev/null; then
-        log_error "docker compose не найден. Установите Docker Compose V2"
+    if docker compose version &> /dev/null; then
+        COMPOSE_CMD="docker compose"
+    elif docker-compose --version &> /dev/null; then
+        COMPOSE_CMD="docker-compose"
+    else
+        log_error "docker compose не найден. Установите Docker Compose"
         exit 1
     fi
 
-    log_info "Запуск сервисов через docker compose..."
+    log_info "Запуск сервисов через $COMPOSE_CMD..."
     # Собираем backend без предварительной загрузки зависимостей (go-offline), 
     # так как это вызывает таймауты при медленном соединении.
     # Maven загрузит зависимости непосредственно во время компиляции.
-    docker compose -f docker-compose.yml up --build -d postgres redis
+    $COMPOSE_CMD -f docker-compose.yml up --build -d postgres redis
     sleep 5
-    docker compose -f docker-compose.yml up --build -d backend frontend
+    $COMPOSE_CMD -f docker-compose.yml up --build -d backend frontend
 
     log_info "Ожидание готовности (45 сек)..."
     sleep 45
@@ -131,14 +136,14 @@ start_docker() {
 stop_docker() {
     log_step "Остановка Docker сервисов..."
     cd "$INFRA_DIR"
-    docker compose -f docker-compose.yml down
+    $COMPOSE_CMD -f docker-compose.yml down
     log_success "Сервисы остановлены"
 }
 
 clean_docker() {
     log_step "Очистка Docker данных..."
     cd "$INFRA_DIR"
-    docker compose -f docker-compose.yml down -v
+    $COMPOSE_CMD -f docker-compose.yml down -v
     log_success "Данные очищены"
 }
 
