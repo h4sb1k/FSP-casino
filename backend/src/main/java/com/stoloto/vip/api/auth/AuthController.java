@@ -30,13 +30,14 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        var user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setBalance(BigDecimal.valueOf(1000));
-        user.setBonusBalance(BigDecimal.ZERO);
-        user.setReservedBalance(BigDecimal.ZERO);
+        var user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .balance(BigDecimal.valueOf(1000))
+                .bonusBalance(BigDecimal.ZERO)
+                .reservedBalance(BigDecimal.ZERO)
+                .build();
         userRepository.save(user);
         
         return ResponseEntity.ok(AuthResponse.builder()
@@ -57,13 +58,14 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseGet(() -> {
-                    var newUser = new User();
-                    newUser.setUsername("demo");
-                    newUser.setEmail(request.getEmail());
-                    newUser.setPassword(passwordEncoder.encode("password"));
-                    newUser.setBalance(BigDecimal.valueOf(1000));
-                    newUser.setBonusBalance(BigDecimal.ZERO);
-                    newUser.setReservedBalance(BigDecimal.ZERO);
+                    var newUser = User.builder()
+                            .username("demo")
+                            .email(request.getEmail())
+                            .passwordHash(passwordEncoder.encode("password"))
+                            .balance(BigDecimal.valueOf(1000))
+                            .bonusBalance(BigDecimal.ZERO)
+                            .reservedBalance(BigDecimal.ZERO)
+                            .build();
                     return newUser;
                 });
         

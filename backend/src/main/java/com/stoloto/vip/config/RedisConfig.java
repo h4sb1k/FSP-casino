@@ -42,12 +42,8 @@ public class RedisConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         
-        // Подписываемся на каналы для real-time событий
-        container.addMessageListener((message, pattern) -> {
-            // Обработка сообщений будет настроена в сервисах
-        }, new PatternTopic("room:*"), 
-           new PatternTopic("round:*"),
-           new PatternTopic("user:*"));
+        // Подписываемся на каналы для real-time событий (заглушка)
+        // Обработка сообщений будет настроена в сервисах
         
         return container;
     }

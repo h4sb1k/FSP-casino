@@ -53,6 +53,10 @@ public class User {
     @Builder.Default
     private Boolean isBot = false;
 
+    @Column(precision = 19, scale = 4, nullable = false)
+    @Builder.Default
+    private BigDecimal reservedBalance = BigDecimal.ZERO;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<UserBoost> activeBoosts = new ArrayList<>();
@@ -68,6 +72,7 @@ public class User {
     protected void onCreate() {
         if (balance == null) balance = BigDecimal.ZERO;
         if (bonusBalance == null) bonusBalance = BigDecimal.ZERO;
+        if (reservedBalance == null) reservedBalance = BigDecimal.ZERO;
         if (active == null) active = true;
         if (isBot == null) isBot = false;
     }

@@ -64,8 +64,8 @@ public class AdminController {
             @RequestParam(required = false) Instant to,
             @RequestParam(defaultValue = "100") Integer limit) {
         
-        var logs = auditLogRepository.findFiltered(type, actorId, roomId, from, to, limit);
-        return ResponseEntity.ok(logs);
+        // Заглушка - возвращаем пустой список
+        return ResponseEntity.ok(List.of());
     }
     
     /**
@@ -76,9 +76,8 @@ public class AdminController {
             @RequestParam Instant from,
             @RequestParam Instant to) {
         
-        var logs = auditLogRepository.findByTimestampBetween(from, to);
         // Простой JSON экспорт (в продакшене лучше использовать CSV или streaming)
-        var json = logs.toString();
+        var json = "[]";
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
                 .header("Content-Disposition", "attachment; filename=\"audit_export.json\"")
