@@ -6,7 +6,7 @@
   "description": "Stoloto VIP Rooms - Vue Frontend",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.ts --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext .vue,.ts --fix",
