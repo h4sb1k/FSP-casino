@@ -6,11 +6,11 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <!-- Подключение всех чейнджлогов -->
-    <include file="db/changelog/001-create-users-table.xml" relativeToChangelogFile="true"/>
-    <include file="db/changelog/002-create-rooms-and-configs.xml" relativeToChangelogFile="true"/>
-    <include file="db/changelog/003-create-game-rounds-and-bets.xml" relativeToChangelogFile="true"/>
-    <include file="db/changelog/004-create-bots-and-boosts.xml" relativeToChangelogFile="true"/>
-    <include file="db/changelog/005-create-audit-logs.xml" relativeToChangelogFile="true"/>
-    <include file="db/changelog/006-seed-initial-data.xml" relativeToChangelogFile="true"/>
+    <include file="001-create-users-table.xml"/>
+    <include file="002-create-rooms-and-configs.xml"/>
+    <include file="003-create-game-rounds-and-bets.xml"/>
+    <include file="004-create-bots-and-boosts.xml"/>
+    <include file="005-create-audit-logs.xml"/>
+    <include file="006-seed-initial-data.xml"/>
 
 </databaseChangeLog>
