@@ -1,31 +1,14 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import path from 'path';
-import svgr from 'vite-plugin-svgr';
 import compression from 'vite-plugin-compression';
-import { visualizer } from 'rollup-plugin-visualizer';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
-    svgr({
-      svgrOptions: {
-        icon: true,
-        exportType: 'named',
-        namedExport: 'ReactComponent',
-        plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
-      },
-    }),
+    vue(),
     compression({
       algorithm: 'gzip',
       ext: '.gz',
-    }),
-    visualizer({
-      filename: 'dist/stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
     }),
   ],
   resolve: {
@@ -37,7 +20,6 @@ export default defineConfig({
       '@lobby': path.resolve(__dirname, './src/lobby'),
       '@game': path.resolve(__dirname, './src/game'),
       '@admin': path.resolve(__dirname, './src/admin'),
-      '@routes': path.resolve(__dirname, './src/routes'),
     },
   },
   server: {
@@ -61,16 +43,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          state: ['@reduxjs/toolkit', 'react-redux', 'zustand'],
-          http: ['axios', '@tanstack/react-query'],
-          charts: ['recharts'],
-          forms: ['formik', 'yup'],
+          vendor: ['vue', 'vue-router', 'pinia'],
+          http: ['axios'],
         },
       },
     },
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
   },
 });
