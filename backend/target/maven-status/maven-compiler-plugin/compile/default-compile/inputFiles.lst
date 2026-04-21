@@ -36,7 +36,6 @@
 /workspace/backend/src/main/java/com/stoloto/vip/domain/enums/TransactionType.java
 /workspace/backend/src/main/java/com/stoloto/vip/api/dto/AuthResponse.java
 /workspace/backend/src/main/java/com/stoloto/vip/rng/RngService.java
-/workspace/backend/src/main/java/com/stoloto/vip/service/balance/BalanceService.java
 /workspace/backend/src/main/java/com/stoloto/vip/core/repository/BetRepository.java
 /workspace/backend/src/main/java/com/stoloto/vip/domain/entity/BoostConfig.java
 /workspace/backend/src/main/java/com/stoloto/vip/core/enums/TransactionType.java
