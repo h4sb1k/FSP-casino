@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ENUM тип для комнат: Bronze, Gold, Diamond -->
+    <changeSet id="002-create-room-types" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE room_type AS ENUM ('BRONZE', 'GOLD', 'DIAMOND');
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS room_type;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- ENUM тип для статуса комнаты -->
+    <changeSet id="002-create-room-status" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE room_status AS ENUM ('WAITING', 'ACTIVE', 'ROUND_IN_PROGRESS', 'COMPLETED', 'CLOSED');
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS room_status;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- Таблица конфигураций комнат (шаблоны) -->
+    <changeSet id="002-create-room-configs" author="architect">
+        <createTable tableName="room_configs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="room_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_bet" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_bet" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="capacity" type="INTEGER" defaultValueNumeric="8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bot_fill_threshold" type="INTEGER" defaultValueNumeric="2">
+                <comments>Заполнять ботами если игроков меньше этого числа</comments>
+            </column>
+            <column name="round_duration_seconds" type="INTEGER" defaultValueNumeric="60">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="room_configs" indexName="idx_room_configs_type">
+            <column name="type"/>
+        </createIndex>
+        <addComments tableName="room_configs">
+            <comments>Шаблоны настроек для комнат разных типов (Bronze/Gold/Diamond)</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица активных комнат (инстансы) -->
+    <changeSet id="002-create-rooms" author="architect">
+        <createTable tableName="rooms">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="config_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_rooms_config" references="room_configs(id)"/>
+            </column>
+            <column name="status" type="room_status" defaultValue="WAITING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="current_round_id" type="BIGINT">
+                <comments>ID текущего раунда</comments>
+            </column>
+            <column name="player_count" type="INTEGER" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_prize_pool" type="BIGINT" defaultValueNumeric="0">
+                <comments>Общий призовой фонд текущего раунда</comments>
+            </column>
+            <column name="started_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="closed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="rooms" indexName="idx_rooms_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="rooms" indexName="idx_rooms_config">
+            <column name="config_id"/>
+        </createIndex>
+        <addComments tableName="rooms">
+            <comments>Активные экземпляры игровых комнат</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица участников комнаты (текущие игроки) -->
+    <changeSet id="002-create-room-participants" author="architect">
+        <createTable tableName="room_participants">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_participants_room" references="rooms(id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_participants_user" references="users(id)"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="left_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="is_bot" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="room_participants" indexName="idx_participants_room">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="room_participants" indexName="idx_participants_user">
+            <column name="user_id"/>
+        </createIndex>
+        <!-- Уникальный индекс: пользователь может быть в комнате только один раз активно -->
+        <addUniqueConstraint tableName="room_participants" columnNames="room_id, user_id" constraintName="uk_participants_room_user"/>
+        
+        <addComments tableName="room_participants">
+            <comments>Текущие участники комнат (активные сессии)</comments>
+        </addComments>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,34 +1,24 @@
 ```
-# Compiled Java files
-*.class
+# Dependencies
+node_modules/
 
-# Maven build artifacts
-target/
-
-# Gradle build artifacts
-.gradle/
-
-# IDE files
-.idea/
-.vscode/
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
 
-# Environment files
+# Environment
 .env
 .env.local
 *.env.*
 
-# Temporary files
-*.tmp
-*.swp
+# Editors
+.vscode/
+.idea/
 
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
+# Build outputs
+dist/
+build/
+coverage/
+htmlcov/
+.nyc_output/
 ```

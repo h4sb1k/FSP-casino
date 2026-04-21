@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Таблица конфигураций бустов -->
+    <changeSet id="004-create-boost-configs" author="architect">
+        <createTable tableName="boost_configs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="cost_in_bonus" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="win_probability_bonus_percent" type="DOUBLE">
+                <comments>Процент увеличения вероятности победы (например, 5.0 = +5%)</comments>
+            </column>
+            <column name="max_usage_per_round" type="INTEGER" defaultValueNumeric="1">
+                <comments>Максимальное использование за раунд (обычно 1)</comments>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applicable_room_types" type="VARCHAR(255)">
+                <comments>Список типов комнат через запятую: BRONZE,GOLD,DIAMOND или NULL для всех</comments>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="boost_configs" indexName="idx_boost_configs_active">
+            <column name="is_active"/>
+        </createIndex>
+        <addComments tableName="boost_configs">
+            <comments>Конфигурации бустов: стоимость в бонусах и процент увеличения шанса победы</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица использования бустов игроками (история) -->
+    <changeSet id="004-create-user-boosts" author="architect">
+        <createTable tableName="user_boosts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_boosts_user" references="users(id)"/>
+            </column>
+            <column name="boost_config_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_boosts_config" references="boost_configs(id)"/>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_boosts_round" references="rounds(id)"/>
+            </column>
+            <column name="bonus_spent" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="applied_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="user_boosts" indexName="idx_user_boosts_user">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="user_boosts" indexName="idx_user_boosts_round">
+            <column name="round_id"/>
+        </createIndex>
+        <!-- Ограничение: один буст на раунд на пользователя -->
+        <addUniqueConstraint tableName="user_boosts" columnNames="user_id, round_id" constraintName="uk_user_boosts_user_round"/>
+        
+        <addComments tableName="user_boosts">
+            <comments>История использования бустов игроками</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- ENUM тип для статуса бота -->
+    <changeSet id="004-create-bot-status" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE bot_status AS ENUM ('ACTIVE', 'INACTIVE', 'IN_GAME', 'MAINTENANCE');
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS bot_status;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- Таблица профилей ботов -->
+    <changeSet id="004-create-bot-profiles" author="architect">
+        <createTable tableName="bot_profiles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="display_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="avatar_url" type="VARCHAR(500)"/>
+            <column name="status" type="bot_status" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="strategy_type" type="VARCHAR(50)" defaultValue="RANDOM">
+                <comments>RANDOM, CONSERVATIVE, AGGRESSIVE, BALANCED</comments>
+            </column>
+            <column name="min_bet_multiplier" type="DOUBLE" defaultValueNumeric="1.0">
+                <comments>Множитель минимальной ставки комнаты</comments>
+            </column>
+            <column name="max_bet_multiplier" type="DOUBLE" defaultValueNumeric="5.0">
+                <comments>Множитель максимальной ставки комнаты</comments>
+            </column>
+            <column name="join_probability" type="DOUBLE" defaultValueNumeric="0.8">
+                <comments>Вероятность присоединения к комнате при возможности</comments>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="bot_profiles" indexName="idx_bot_profiles_status">
+            <column name="status"/>
+        </createIndex>
+        <addComments tableName="bot_profiles">
+            <comments>Профили ботов для заполнения комнат</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица связи комнат и ботов (какие боты в какой комнате) -->
+    <changeSet id="004-create-room-bots" author="architect">
+        <createTable tableName="room_bots">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_room_bots_room" references="rooms(id)"/>
+            </column>
+            <column name="bot_profile_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_room_bots_profile" references="bot_profiles(id)"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="left_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="current_bet_amount" type="BIGINT" defaultValueNumeric="0"/>
+            <column name="has_active_boost" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="room_bots" indexName="idx_room_bots_room">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="room_bots" indexName="idx_room_bots_profile">
+            <column name="bot_profile_id"/>
+        </createIndex>
+        
+        <addComments tableName="room_bots">
+            <comments>Текущее присутствие ботов в комнатах</comments>
+        </addComments>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ENUM тип для типа действия аудита -->
+    <changeSet id="005-create-audit-types" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE audit_action_type AS ENUM (
+                'USER_LOGIN', 'USER_LOGOUT', 'USER_REGISTER',
+                'ROOM_CREATED', 'ROOM_STARTED', 'ROOM_CLOSED',
+                'ROUND_STARTED', 'ROUND_COMPLETED', 'ROUND_CANCELLED',
+                'BET_PLACED', 'BET_SETTLED', 'BET_CANCELLED',
+                'BOOST_ACTIVATED', 'BOOST_PURCHASED',
+                'BOT_JOINED', 'BOT_LEFT', 'BOT_ACTION',
+                'BALANCE_CHANGED', 'TRANSACTION_CREATED',
+                'ADMIN_CONFIG_CHANGE', 'ADMIN_USER_ACTION',
+                'SECURITY_ALERT', 'RNG_SEED_GENERATED', 'RNG_SEED_REVEALED'
+            );
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS audit_action_type;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- ENUM тип для актора аудита -->
+    <changeSet id="005-create-audit-actor-type" author="architect">
+        <sql dbms="postgresql">
+            CREATE TYPE audit_actor_type AS ENUM ('USER', 'BOT', 'SYSTEM', 'ADMIN');
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP TYPE IF EXISTS audit_actor_type;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- Основная таблица аудита -->
+    <changeSet id="005-create-audit-logs" author="architect">
+        <createTable tableName="audit_logs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="timestamp" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_type" type="audit_action_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actor_type" type="audit_actor_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actor_id" type="BIGINT">
+                <comments>ID пользователя, бота или NULL для SYSTEM</comments>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <comments>Связь с комнатой (если применимо)</comments>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <comments>Связь с раундом (если применимо)</comments>
+            </column>
+            <column name="context_data" type="TEXT">
+                <comments>JSON с контекстом: {roomId, roundId, prevState, newState}</comments>
+            </column>
+            <column name="payload" type="TEXT">
+                <comments>JSON с деталями действия: суммы, семена RNG, результаты</comments>
+            </column>
+            <column name="ip_address" type="VARCHAR(45)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="signature" type="VARCHAR(64)">
+                <comments>SHA256 хэш записи для проверки целостности</comments>
+            </column>
+            <column name="is_critical" type="BOOLEAN" defaultValueBoolean="false">
+                <comments>Флаг критичности (требует внимания админа)</comments>
+            </column>
+        </createTable>
+
+        <!-- Индексы для быстрого поиска -->
+        <createIndex tableName="audit_logs" indexName="idx_audit_timestamp">
+            <column name="timestamp"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_action_type">
+            <column name="action_type"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_actor">
+            <column name="actor_type"/>
+            <column name="actor_id"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_room">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_round">
+            <column name="round_id"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_critical">
+            <column name="is_critical"/>
+        </createIndex>
+
+        <addComments tableName="audit_logs">
+            <comments>Полный аудит всех действий в системе с криптографической подписью для целостности</comments>
+        </addComments>
+    </changeSet>
+
+    <!-- Таблица для хранения раскрытых RNG семян (для верификации игроками) -->
+    <changeSet id="005-create-rng-seeds-archive" author="architect">
+        <createTable tableName="rng_seeds_archive">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <constraints nullable="false" unique="true" foreignKeyName="fk_rng_seeds_round" references="rounds(id)"/>
+            </column>
+            <column name="server_seed" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_seed_hash" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_seed" type="VARCHAR(64)"/>
+            <column name="nonce" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result_hash" type="VARCHAR(64)">
+                <comments>Хэш результата для быстрой верификации</comments>
+            </column>
+            <column name="revealed_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="rng_seeds_archive" indexName="idx_rng_seeds_round">
+            <column name="round_id"/>
+        </createIndex>
+        <addComments tableName="rng_seeds_archive">
+            <comments>Архив раскрытых RNG семян для Provably Fair верификации</comments>
+        </addComments>
+    </changeSet>
+
+</databaseChangeLog>
