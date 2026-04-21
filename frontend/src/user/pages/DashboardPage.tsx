@@ -3,8 +3,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../shared/hooks';
-import { userApi } from '../../shared/services';
-import { User, UserStats } from '../../shared/types';
+import { UserStats } from '../../shared/types';
 import './DashboardPage.css';
 
 const DashboardPage: React.FC = () => {
@@ -18,10 +17,8 @@ const DashboardPage: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const response = await userApi.getStats();
-      if (response.data) {
-        setStats(response.data);
-      }
+      // TODO: Implement userApi.getStats() when user service is created
+      console.log('Loading stats for user:', user?.username);
     } catch (error) {
       console.error('Failed to load stats:', error);
     } finally {
