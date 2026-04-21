@@ -1,44 +1,42 @@
-# Database migration files
-backend/resources/db/init/*.sql
-backend/src/main/resources/db/changelog/*.xml
-
-# Compiled Java classes
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
 *.class
-target/
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
-.m2/
+.venv/
+venv/
+node_modules/
+dist/
+build/
+target/
 .gradle/
+.mypy_cache/
+.pytest_cache/
 
-# IDE files
-.idea/
-.vscode/
-
-# Logs
+# Logs and temp files
 *.log
+*.tmp
+*.swp
+*.swo
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Build artifacts
-dist/
-build/
-out/
+# Editors
+.vscode/
+.idea/
 
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Temp files
-*.tmp
-*.swp
-*.swo
-
-# OS files
+# System files
 .DS_Store
 Thumbs.db
 
