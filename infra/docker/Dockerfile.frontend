@@ -12,7 +12,6 @@ RUN npm ci --prefer-offline || npm install
 
 # Copy only necessary source files for build
 COPY frontend/src ./src
-COPY frontend/public ./public
 COPY frontend/vite.config.ts ./
 COPY frontend/tsconfig.json ./
 COPY frontend/tsconfig.node.json ./
