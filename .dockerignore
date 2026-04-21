@@ -1,28 +1,31 @@
 # Git
-.git
+.git/**
 .gitignore
 .gitattributes
 
 # Dependencies
-node_modules
-target
+**/node_modules/**
+**/target/**
 vendor
 
 # Build outputs
-dist
-build
+dist/**
+build/**
 *.log
 
-# Environment files
+# Environment files (keep examples)
 .env
 .env.local
 .env.*.local
+!**/.env.example
+!**/.env.*.example
 
 # IDE
-.idea
-.vscode
-*.swp
-*.swo
+.idea/**
+.vscode/**
+**/*.swp
+**/*.swo
+**/*.iml
 
 # Docker
 docker-compose.override.yml
@@ -31,3 +34,4 @@ docker-compose.override.yml
 README.md
 *.md
 docs
+**/*.log

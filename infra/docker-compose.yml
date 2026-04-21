@@ -26,9 +26,7 @@ services:
       - stoloto-network
 
   redis:
-    build:
-      context: ..
-      dockerfile: infra/docker/Dockerfile.redis
+    image: redis:7-alpine
     container_name: stoloto-redis
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
@@ -49,8 +47,6 @@ services:
     build:
       context: ..
       dockerfile: infra/docker/Dockerfile.backend
-      cache_from:
-        - type=local,src=/tmp/.build-cache-backend
     container_name: stoloto-backend
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -59,7 +55,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: stoloto_password_dev
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      JWT_SECRET: your-secret-key-change-in-production-min-32-chars
+      JWT_SECRET: your-secret-key-change-in-production-min-32-chars # CHANGE_ME: Replace with secure random string in production
       JWT_EXPIRATION_MS: 86400000
       SERVER_PORT: 8080
       LOG_LEVEL: INFO
@@ -79,8 +75,6 @@ services:
     build:
       context: ..
       dockerfile: infra/docker/Dockerfile.frontend
-      cache_from:
-        - type=local,src=/tmp/.build-cache-frontend
     container_name: stoloto-frontend
     environment:
       VITE_API_BASE_URL: http://backend:8080/api
