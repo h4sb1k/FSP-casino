@@ -143,6 +143,17 @@ stop_docker() {
 clean_docker() {
     log_step "Очистка Docker данных..."
     cd "$INFRA_DIR"
+    
+    # Определяем команду compose
+    if docker compose version &> /dev/null; then
+        COMPOSE_CMD="docker compose"
+    elif docker-compose --version &> /dev/null; then
+        COMPOSE_CMD="docker-compose"
+    else
+        log_error "docker compose не найден"
+        exit 1
+    fi
+    
     $COMPOSE_CMD -f docker-compose.yml down -v
     log_success "Данные очищены"
 }
