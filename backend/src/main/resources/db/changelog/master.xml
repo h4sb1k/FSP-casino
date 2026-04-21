@@ -437,4 +437,88 @@
         </insert>
     </changeSet>
 
+    <!-- Начальные данные: модератор -->
+    <changeSet id="013-seed-moderator-user" author="architect">
+        <insert tableName="users">
+            <column name="username" value="moderator"/>
+            <column name="email" value="mod@stoloto-vip.ru"/>
+            <column name="password_hash" value="$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS3MebAJu"/>
+            <column name="role" value="MODERATOR"/>
+            <column name="balance" valueNumeric="5000.00"/>
+            <column name="bonus_balance" valueNumeric="2000.00"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="is_bot" valueBoolean="false"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+    </changeSet>
+
+    <!-- Начальные данные: тестовые пользователи -->
+    <changeSet id="014-seed-test-users" author="architect">
+        <insert tableName="users">
+            <column name="username" value="user1"/>
+            <column name="email" value="user1@test.ru"/>
+            <column name="password_hash" value="$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS3MebAJu"/>
+            <column name="role" value="USER"/>
+            <column name="balance" valueNumeric="1000.00"/>
+            <column name="bonus_balance" valueNumeric="500.00"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="is_bot" valueBoolean="false"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="user2"/>
+            <column name="email" value="user2@test.ru"/>
+            <column name="password_hash" value="$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS3MebAJu"/>
+            <column name="role" value="USER"/>
+            <column name="balance" valueNumeric="2500.00"/>
+            <column name="bonus_balance" valueNumeric="750.00"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="is_bot" valueBoolean="false"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+    </changeSet>
+
+    <!-- Начальные данные: комнаты -->
+    <changeSet id="015-seed-rooms" author="architect">
+        <insert tableName="rooms">
+            <column name="name" value="Bronze Room"/>
+            <column name="description" value="Комната для начинающих игроков"/>
+            <column name="min_players" valueNumeric="2"/>
+            <column name="max_players" valueNumeric="8"/>
+            <column name="min_bet" valueNumeric="100.00"/>
+            <column name="max_bet" valueNumeric="1000.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="auto_start" valueBoolean="true"/>
+            <column name="round_duration_seconds" valueNumeric="60"/>
+            <column name="betting_duration_seconds" valueNumeric="30"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="rooms">
+            <column name="name" value="Gold Room"/>
+            <column name="description" value="Комната для опытных игроков"/>
+            <column name="min_players" valueNumeric="2"/>
+            <column name="max_players" valueNumeric="8"/>
+            <column name="min_bet" valueNumeric="1000.00"/>
+            <column name="max_bet" valueNumeric="10000.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="auto_start" valueBoolean="true"/>
+            <column name="round_duration_seconds" valueNumeric="90"/>
+            <column name="betting_duration_seconds" valueNumeric="45"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+        <insert tableName="rooms">
+            <column name="name" value="Diamond Room"/>
+            <column name="description" value="Комната для высоких ставок"/>
+            <column name="min_players" valueNumeric="2"/>
+            <column name="max_players" valueNumeric="6"/>
+            <column name="min_bet" valueNumeric="10000.00"/>
+            <column name="max_bet" valueNumeric="100000.00"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="auto_start" valueBoolean="true"/>
+            <column name="round_duration_seconds" valueNumeric="120"/>
+            <column name="betting_duration_seconds" valueNumeric="60"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
