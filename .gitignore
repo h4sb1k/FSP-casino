@@ -34,7 +34,12 @@ venv/
 *.swp
 *.swo
 
-# System files
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# OS
 .DS_Store
 Thumbs.db
 
