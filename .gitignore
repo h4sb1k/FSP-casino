@@ -2,8 +2,11 @@
 # Build artifacts
 target/
 
-# Dependencies
+# Dependencies and caches
 node_modules/
+bower_components/
+.jspm/
+.yarn-cache/
 venv/
 .venv/
 __pycache__/
