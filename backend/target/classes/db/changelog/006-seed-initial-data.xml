@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Seed данные: Конфигурации комнат (Bronze, Gold, Diamond) -->
+    <changeSet id="006-seed-room-configs" author="architect">
+        <insert tableName="room_configs">
+            <column name="name" value="Bronze Room"/>
+            <column name="type" value="BRONZE"/>
+            <column name="min_bet" valueNumeric="100"/>
+            <column name="max_bet" valueNumeric="1000"/>
+            <column name="capacity" valueNumeric="8"/>
+            <column name="bot_fill_threshold" valueNumeric="3"/>
+            <column name="round_duration_seconds" valueNumeric="60"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="room_configs">
+            <column name="name" value="Gold Room"/>
+            <column name="type" value="GOLD"/>
+            <column name="min_bet" valueNumeric="1000"/>
+            <column name="max_bet" valueNumeric="10000"/>
+            <column name="capacity" valueNumeric="8"/>
+            <column name="bot_fill_threshold" valueNumeric="2"/>
+            <column name="round_duration_seconds" valueNumeric="90"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="room_configs">
+            <column name="name" value="Diamond Room"/>
+            <column name="type" value="DIAMOND"/>
+            <column name="min_bet" valueNumeric="10000"/>
+            <column name="max_bet" valueNumeric="100000"/>
+            <column name="capacity" valueNumeric="6"/>
+            <column name="bot_fill_threshold" valueNumeric="2"/>
+            <column name="round_duration_seconds" valueNumeric="120"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed данные: Конфигурации бустов -->
+    <changeSet id="006-seed-boost-configs" author="architect">
+        <insert tableName="boost_configs">
+            <column name="name" value="Small Boost"/>
+            <column name="description" value="+5% к вероятности победы"/>
+            <column name="cost_in_bonus" valueNumeric="50"/>
+            <column name="win_probability_bonus_percent" valueNumeric="5.0"/>
+            <column name="max_usage_per_round" valueNumeric="1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="boost_configs">
+            <column name="name" value="Medium Boost"/>
+            <column name="description" value="+10% к вероятности победы"/>
+            <column name="cost_in_bonus" valueNumeric="100"/>
+            <column name="win_probability_bonus_percent" valueNumeric="10.0"/>
+            <column name="max_usage_per_round" valueNumeric="1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="boost_configs">
+            <column name="name" value="Large Boost"/>
+            <column name="description" value="+20% к вероятности победы"/>
+            <column name="cost_in_bonus" valueNumeric="200"/>
+            <column name="win_probability_bonus_percent" valueNumeric="20.0"/>
+            <column name="max_usage_per_round" valueNumeric="1"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed данные: Профили ботов -->
+    <changeSet id="006-seed-bot-profiles" author="architect">
+        <insert tableName="bot_profiles">
+            <column name="username" value="bot_alice"/>
+            <column name="display_name" value="Alice 🤖"/>
+            <column name="avatar_url" value="/avatars/bot1.png"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="strategy_type" value="CONSERVATIVE"/>
+            <column name="min_bet_multiplier" valueNumeric="1.0"/>
+            <column name="max_bet_multiplier" valueNumeric="2.0"/>
+            <column name="join_probability" valueNumeric="0.9"/>
+        </insert>
+        <insert tableName="bot_profiles">
+            <column name="username" value="bot_bob"/>
+            <column name="display_name" value="Bob 🤖"/>
+            <column name="avatar_url" value="/avatars/bot2.png"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="strategy_type" value="BALANCED"/>
+            <column name="min_bet_multiplier" valueNumeric="1.5"/>
+            <column name="max_bet_multiplier" valueNumeric="3.0"/>
+            <column name="join_probability" valueNumeric="0.8"/>
+        </insert>
+        <insert tableName="bot_profiles">
+            <column name="username" value="bot_charlie"/>
+            <column name="display_name" value="Charlie 🤖"/>
+            <column name="avatar_url" value="/avatars/bot3.png"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="strategy_type" value="AGGRESSIVE"/>
+            <column name="min_bet_multiplier" valueNumeric="2.0"/>
+            <column name="max_bet_multiplier" valueNumeric="5.0"/>
+            <column name="join_probability" valueNumeric="0.7"/>
+        </insert>
+        <insert tableName="bot_profiles">
+            <column name="username" value="bot_diana"/>
+            <column name="display_name" value="Diana 🤖"/>
+            <column name="avatar_url" value="/avatars/bot4.png"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="strategy_type" value="RANDOM"/>
+            <column name="min_bet_multiplier" valueNumeric="1.0"/>
+            <column name="max_bet_multiplier" valueNumeric="4.0"/>
+            <column name="join_probability" valueNumeric="0.85"/>
+        </insert>
+        <insert tableName="bot_profiles">
+            <column name="username" value="bot_eve"/>
+            <column name="display_name" value="Eve 🤖"/>
+            <column name="avatar_url" value="/avatars/bot5.png"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="strategy_type" value="BALANCED"/>
+            <column name="min_bet_multiplier" valueNumeric="1.2"/>
+            <column name="max_bet_multiplier" valueNumeric="2.5"/>
+            <column name="join_probability" valueNumeric="0.8"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed данные: Тестовые пользователи -->
+    <changeSet id="006-seed-users" author="architect">
+        <!-- Пароль для всех тестовых пользователей: "password123" (BCRYPT хэш) -->
+        <insert tableName="users">
+            <column name="email" value="admin@stoloto.test"/>
+            <column name="password_hash" value="$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"/>
+            <column name="username" value="admin"/>
+            <column name="role" value="SUPER_ADMIN"/>
+            <column name="balance" valueNumeric="1000000"/>
+            <column name="bonus_balance" valueNumeric="50000"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="moderator@stoloto.test"/>
+            <column name="password_hash" value="$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"/>
+            <column name="username" value="moderator"/>
+            <column name="role" value="ADMIN"/>
+            <column name="balance" valueNumeric="500000"/>
+            <column name="bonus_balance" valueNumeric="25000"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="player1@stoloto.test"/>
+            <column name="password_hash" value="$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"/>
+            <column name="username" value="player_one"/>
+            <column name="role" value="USER"/>
+            <column name="balance" valueNumeric="50000"/>
+            <column name="bonus_balance" valueNumeric="500"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="player2@stoloto.test"/>
+            <column name="password_hash" value="$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"/>
+            <column name="username" value="lucky_player"/>
+            <column name="role" value="USER"/>
+            <column name="balance" valueNumeric="100000"/>
+            <column name="bonus_balance" valueNumeric="1000"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="email" value="player3@stoloto.test"/>
+            <column name="password_hash" value="$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"/>
+            <column name="username" value="high_roller"/>
+            <column name="role" value="USER"/>
+            <column name="balance" valueNumeric="500000"/>
+            <column name="bonus_balance" valueNumeric="5000"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <!-- Seed данные: Начальные транзакции для пользователей (для аудита) -->
+    <changeSet id="006-seed-initial-transactions" author="architect">
+        <sql dbms="postgresql">
+            INSERT INTO transactions (user_id, type, amount, balance_before, balance_after, bonus_balance_before, bonus_balance_after, reference_type, reference_id, status, description, created_at)
+            SELECT 
+                id, 
+                'BONUS_GRANT'::transaction_type, 
+                bonus_balance, 
+                0, 
+                bonus_balance, 
+                0, 
+                bonus_balance, 
+                'SYSTEM', 
+                NULL, 
+                'COMPLETED', 
+                'Initial bonus grant on system setup', 
+                CURRENT_TIMESTAMP
+            FROM users WHERE role != 'BOT';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
