@@ -5,9 +5,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy npm config for private registry
+COPY frontend/.npmrc ./
+
 # Install dependencies (cached unless package*.json changes)
 COPY frontend/package*.json ./
-RUN npm install --silent
+RUN npm ci --silent --prefer-offline
 
 # Copy source and build
 COPY frontend/ .

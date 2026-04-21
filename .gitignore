@@ -12,39 +12,32 @@ target/
 # Build artifacts
 dist/
 build/
+coverage/
+htmlcov/
 *.pyc
 *.class
 *.o
-*.exe
-*.dll
-*.so
-*.a
 *.obj
 *.out
 
-# Logs and temporary files
-*.log
-*.tmp
-*.swp
-*.swo
-
-# Environment files
+# Environment
 .env
 .env.local
 *.env.*
 
-# Editors and IDEs
+# Editors
 .vscode/
 .idea/
+*.swp
+*.swo
+*.tmp
 
-# System files
+# System
 .DS_Store
 Thumbs.db
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Logs
+*.log
 
 # Compressed files
 *.zip
