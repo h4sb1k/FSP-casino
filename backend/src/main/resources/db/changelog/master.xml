@@ -3,14 +3,438 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
-    <!-- Подключение всех чейнджлогов -->
-    <include file="001-create-users-table.xml"/>
-    <include file="002-create-rooms-and-configs.xml"/>
-    <include file="003-create-game-rounds-and-bets.xml"/>
-    <include file="004-create-bots-and-boosts.xml"/>
-    <include file="005-create-audit-logs.xml"/>
-    <include file="006-seed-initial-data.xml"/>
+    <!-- Таблица пользователей -->
+    <changeSet id="001-create-users-table" author="architect">
+        <createTable tableName="users">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bonus_balance" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_bot" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        
+        <addDefaultValue tableName="users" columnName="role" defaultValue="USER"/>
+        <addDefaultValue tableName="users" columnName="balance" defaultValueNumeric="0"/>
+        <addDefaultValue tableName="users" columnName="bonus_balance" defaultValueNumeric="0"/>
+        <addDefaultValue tableName="users" columnName="active" defaultValueBoolean="true"/>
+        <addDefaultValue tableName="users" columnName="is_bot" defaultValueBoolean="false"/>
+        
+        <createIndex tableName="users" indexName="idx_users_username">
+            <column name="username"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="idx_users_email">
+            <column name="email"/>
+        </createIndex>
+        <createIndex tableName="users" indexName="idx_users_role">
+            <column name="role"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица комнат -->
+    <changeSet id="002-create-rooms-table" author="architect">
+        <createTable tableName="rooms">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="min_players" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_players" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_bet" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_bet" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auto_start" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="round_duration_seconds" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="betting_duration_seconds" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        
+        <addDefaultValue tableName="rooms" columnName="min_players" defaultValueNumeric="2"/>
+        <addDefaultValue tableName="rooms" columnName="max_players" defaultValueNumeric="10"/>
+        <addDefaultValue tableName="rooms" columnName="status" defaultValue="WAITING"/>
+        <addDefaultValue tableName="rooms" columnName="auto_start" defaultValueBoolean="true"/>
+        <addDefaultValue tableName="rooms" columnName="round_duration_seconds" defaultValueNumeric="60"/>
+        <addDefaultValue tableName="rooms" columnName="betting_duration_seconds" defaultValueNumeric="30"/>
+        
+        <createIndex tableName="rooms" indexName="idx_rooms_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица раундов -->
+    <changeSet id="003-create-rounds-table" author="architect">
+        <createTable tableName="rounds">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_rounds_room" references="rooms(id)"/>
+            </column>
+            <column name="round_number" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_pot" type="DECIMAL(19,4)"/>
+            <column name="house_edge" type="DECIMAL(19,4)"/>
+            <column name="started_at" type="TIMESTAMP"/>
+            <column name="finished_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        
+        <addDefaultValue tableName="rounds" columnName="status" defaultValue="PENDING"/>
+        
+        <createIndex tableName="rounds" indexName="idx_rounds_room_id">
+            <column name="room_id"/>
+        </createIndex>
+        <createIndex tableName="rounds" indexName="idx_rounds_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица ставок -->
+    <changeSet id="004-create-bets-table" author="architect">
+        <createTable tableName="bets">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_bets_round" references="rounds(id)"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_bets_user" references="users(id)"/>
+            </column>
+            <column name="amount" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="win_amount" type="DECIMAL(19,4)"/>
+            <column name="is_bot" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="boost_level" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="win_probability" type="DECIMAL(5,4)"/>
+            <column name="settled_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="bets" columnName="is_bot" defaultValueBoolean="false"/>
+        <addDefaultValue tableName="bets" columnName="boost_level" defaultValueNumeric="0"/>
+        
+        <createIndex tableName="bets" indexName="idx_bets_round_id">
+            <column name="round_id"/>
+        </createIndex>
+        <createIndex tableName="bets" indexName="idx_bets_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица транзакций -->
+    <changeSet id="005-create-transactions-table" author="architect">
+        <createTable tableName="transactions">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_transactions_user" references="users(id)"/>
+            </column>
+            <column name="type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_before" type="DECIMAL(19,4)"/>
+            <column name="balance_after" type="DECIMAL(19,4)"/>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="reference_id" type="VARCHAR(255)"/>
+            <column name="success" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="metadata" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="transactions" columnName="success" defaultValueBoolean="true"/>
+        
+        <createIndex tableName="transactions" indexName="idx_transactions_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="transactions" indexName="idx_transactions_type">
+            <column name="type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица конфигурации бустов -->
+    <changeSet id="006-create-boost-configs-table" author="architect">
+        <createTable tableName="boost_configs">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="level" type="INTEGER">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="cost" type="DECIMAL(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="probability_bonus" type="DECIMAL(5,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="boost_configs" columnName="active" defaultValueBoolean="true"/>
+    </changeSet>
+
+    <!-- Таблица пользовательских бустов -->
+    <changeSet id="007-create-user-boosts-table" author="architect">
+        <createTable tableName="user_boosts">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_boosts_user" references="users(id)"/>
+            </column>
+            <column name="boost_config_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_boosts_config" references="boost_configs(id)"/>
+            </column>
+            <column name="round_id" type="BIGINT">
+                <constraints foreignKeyName="fk_user_boosts_round" references="rounds(id)"/>
+            </column>
+            <column name="used" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="user_boosts" columnName="used" defaultValueBoolean="false"/>
+        
+        <createIndex tableName="user_boosts" indexName="idx_user_boosts_user_id">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица конфигурации ботов -->
+    <changeSet id="008-create-bot-configs-table" author="architect">
+        <createTable tableName="bot_configs">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="min_bet_percentage" type="DECIMAL(10,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_bet_percentage" type="DECIMAL(10,6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="buy_boost_probability" type="DECIMAL(5,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_boost_level" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="behavior_pattern" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="bot_configs" columnName="min_bet_percentage" defaultValueNumeric="0.01"/>
+        <addDefaultValue tableName="bot_configs" columnName="max_bet_percentage" defaultValueNumeric="0.1"/>
+        <addDefaultValue tableName="bot_configs" columnName="buy_boost_probability" defaultValueNumeric="0.3"/>
+        <addDefaultValue tableName="bot_configs" columnName="max_boost_level" defaultValueNumeric="2"/>
+        <addDefaultValue tableName="bot_configs" columnName="active" defaultValueBoolean="true"/>
+    </changeSet>
+
+    <!-- Таблица связи комнат и ботов -->
+    <changeSet id="009-create-room-bots-table" author="architect">
+        <createTable tableName="room_bots">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="room_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_room_bots_room" references="rooms(id)"/>
+            </column>
+            <column name="bot_config_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_room_bots_config" references="bot_configs(id)"/>
+            </column>
+            <column name="min_instances" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_instances" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="room_bots" columnName="min_instances" defaultValueNumeric="0"/>
+        <addDefaultValue tableName="room_bots" columnName="max_instances" defaultValueNumeric="5"/>
+        <addDefaultValue tableName="room_bots" columnName="active" defaultValueBoolean="true"/>
+        
+        <createIndex tableName="room_bots" indexName="idx_room_bots_room_id">
+            <column name="room_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Таблица аудита -->
+    <changeSet id="010-create-audit-logs-table" author="architect">
+        <createTable tableName="audit_logs">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="action" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_type" type="VARCHAR(100)"/>
+            <column name="entity_id" type="BIGINT"/>
+            <column name="user_id" type="BIGINT">
+                <constraints foreignKeyName="fk_audit_logs_user" references="users(id)"/>
+            </column>
+            <column name="old_values" type="TEXT"/>
+            <column name="new_values" type="TEXT"/>
+            <column name="ip_address" type="VARCHAR(50)"/>
+            <column name="user_agent" type="VARCHAR(500)"/>
+            <column name="success" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_message" type="TEXT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addDefaultValue tableName="audit_logs" columnName="success" defaultValueBoolean="true"/>
+        
+        <createIndex tableName="audit_logs" indexName="idx_audit_logs_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_logs_action">
+            <column name="action"/>
+        </createIndex>
+        <createIndex tableName="audit_logs" indexName="idx_audit_logs_created_at">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Начальные данные: бусты -->
+    <changeSet id="011-seed-boost-configs" author="architect">
+        <insert tableName="boost_configs">
+            <column name="level" valueNumeric="1"/>
+            <column name="cost" valueNumeric="10.00"/>
+            <column name="probability_bonus" valueNumeric="0.05"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="description" value="Базовый буст: +5% к вероятности победы"/>
+            <column name="created_at" valueDate="${now}"/>
+        </insert>
+        <insert tableName="boost_configs">
+            <column name="level" valueNumeric="2"/>
+            <column name="cost" valueNumeric="20.00"/>
+            <column name="probability_bonus" valueNumeric="0.10"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="description" value="Продвинутый буст: +10% к вероятности победы"/>
+            <column name="created_at" valueDate="${now}"/>
+        </insert>
+        <insert tableName="boost_configs">
+            <column name="level" valueNumeric="3"/>
+            <column name="cost" valueNumeric="30.00"/>
+            <column name="probability_bonus" valueNumeric="0.15"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="description" value="Максимальный буст: +15% к вероятности победы"/>
+            <column name="created_at" valueDate="${now}"/>
+        </insert>
+    </changeSet>
+
+    <!-- Начальные данные: администратор -->
+    <changeSet id="012-seed-admin-user" author="architect">
+        <insert tableName="users">
+            <column name="username" value="admin"/>
+            <column name="email" value="admin@stoloto-vip.ru"/>
+            <column name="password_hash" value="$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS3MebAJu"/>
+            <column name="role" value="SUPER_ADMIN"/>
+            <column name="balance" valueNumeric="10000.00"/>
+            <column name="bonus_balance" valueNumeric="5000.00"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="is_bot" valueBoolean="false"/>
+            <column name="created_at" valueDate="${now}"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>
