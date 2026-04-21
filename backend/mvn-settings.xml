@@ -4,11 +4,6 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0
                               https://maven.apache.org/xsd/settings-1.2.0.xsd">
     <mirrors>
-        <mirror>
-            <id>internal-repository</id>
-            <name>Internal Repository Mirror</name>
-            <url>http://10.31.11.235:8081/repository/maven-public/</url>
-            <mirrorOf>*</mirrorOf>
-        </mirror>
+        <!-- Using default Maven Central repository -->
     </mirrors>
 </settings>

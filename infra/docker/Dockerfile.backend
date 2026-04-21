@@ -3,24 +3,15 @@
 
 FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
-ARG MAVEN_MIRROR_URL=""
-
 WORKDIR /app
-
-# Copy settings.xml if mirror URL is provided
-RUN if [ -n "$MAVEN_MIRROR_URL" ]; then \
-      mkdir -p ~/.m2 && \
-      echo "<settings><mirrors><mirror><id>internal</id><url>$MAVEN_MIRROR_URL</url><mirrorOf>*</mirrorOf></mirror></mirrors></settings>" > ~/.m2/settings.xml; \
-    fi
 
 # Copy pom.xml and download dependencies (cached layer)
 COPY backend/pom.xml .
-COPY backend/mvn-settings.xml ./mvn-settings.xml
-RUN mvn dependency:go-offline -B -q -s mvn-settings.xml || true
+RUN mvn dependency:go-offline -B -q || true
 
 # Copy source and build with parallel compilation
 COPY backend/src ./src
-RUN mvn clean package -DskipTests -B -q -T 1C -s mvn-settings.xml
+RUN mvn clean package -DskipTests -B -q -T 1C
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
