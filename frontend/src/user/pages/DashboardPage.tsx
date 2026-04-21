@@ -8,7 +8,7 @@ import './DashboardPage.css';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<UserStats | null>(null);
+  const [stats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

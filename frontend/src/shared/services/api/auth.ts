@@ -4,7 +4,6 @@ import type {
   AuthTokens,
   LoginRequest,
   RegisterRequest,
-  ApiResponse,
 } from '@shared/types';
 import { API_ENDPOINTS } from '@shared/constants';
 
