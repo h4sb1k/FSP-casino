@@ -402,7 +402,7 @@
             <column name="probability_bonus" valueNumeric="0.05"/>
             <column name="active" valueBoolean="true"/>
             <column name="description" value="Базовый буст: +5% к вероятности победы"/>
-            <column name="created_at" valueDate="${now}"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="boost_configs">
             <column name="level" valueNumeric="2"/>
@@ -410,7 +410,7 @@
             <column name="probability_bonus" valueNumeric="0.10"/>
             <column name="active" valueBoolean="true"/>
             <column name="description" value="Продвинутый буст: +10% к вероятности победы"/>
-            <column name="created_at" valueDate="${now}"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
         <insert tableName="boost_configs">
             <column name="level" valueNumeric="3"/>
@@ -418,7 +418,7 @@
             <column name="probability_bonus" valueNumeric="0.15"/>
             <column name="active" valueBoolean="true"/>
             <column name="description" value="Максимальный буст: +15% к вероятности победы"/>
-            <column name="created_at" valueDate="${now}"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
     </changeSet>
 
@@ -433,7 +433,7 @@
             <column name="bonus_balance" valueNumeric="5000.00"/>
             <column name="active" valueBoolean="true"/>
             <column name="is_bot" valueBoolean="false"/>
-            <column name="created_at" valueDate="${now}"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
         </insert>
     </changeSet>
 
