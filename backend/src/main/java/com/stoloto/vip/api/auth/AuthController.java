@@ -57,22 +57,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         var user = userRepository.findByEmail(request.getEmail())
-                .orElseGet(() -> {
-                    var newUser = User.builder()
-                            .username("demo")
-                            .email(request.getEmail())
-                            .passwordHash(passwordEncoder.encode("password"))
-                            .balance(BigDecimal.valueOf(1000))
-                            .bonusBalance(BigDecimal.ZERO)
-                            .reservedBalance(BigDecimal.ZERO)
-                            .build();
-                    return newUser;
-                });
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        
+        // Проверка пароля
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new RuntimeException("Invalid email or password");
+        }
         
         return ResponseEntity.ok(AuthResponse.builder()
                 .accessToken("mock-access-token")
                 .refreshToken("mock-refresh-token")
-                .userId(user.getId() != null ? user.getId() : 1L)
+                .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .balance(user.getBalance())
