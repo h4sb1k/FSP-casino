@@ -1,16 +1,48 @@
 ```
-# Compiled and build artifacts
-*.class
-target/
+# Build artifacts
+frontend/dist/
+backend/target/
+
 # Dependencies
-.m2/
-# Logs and temp files
-*.log
-# Editors
+node_modules/
+**/node_modules/
+
+# Compression files
+*.gz
+
+# IDE files
 .vscode/
 .idea/
-# Environment
+
+# Logs
+*.log
+
+# Environment files
 .env
 .env.local
-.env.*
+*.env.*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.mypy_cache/
+.pytest_cache/
 ```
