@@ -1,1 +1,72 @@
-Nothing needs to be added to the .gitignore file based on the provided changes. The modification of 'run.sh' does not require any additional ignore rules, as shell scripts are typically source files that should be tracked in version control.
+```
+# Docker related
+.dockerenv
+!docker-compose.yml
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.egg-info/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Build artifacts
+build/
+dist/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.dll
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.coverage.*
+.nyc_output
+istanbul.out
+coverage/
+
+# CI/CD
+.github/
+.gitlab/
+.circleci/
+.jenkins/
+.travis.yml
+```
